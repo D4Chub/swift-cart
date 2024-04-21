@@ -3,7 +3,7 @@ services:
   django:
     build: .
     container_name: django
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python service/manage.py runserver 0.0.0.0:8000
     ports:
       - 8000:8000
     depends_on:
@@ -12,7 +12,7 @@ services:
   db:
     image: postgres:15
     environment:
-      - POSTGRES_DB=django_shop
+      - POSTGRES_DB=swiftDB
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     container_name: pgdb
