@@ -3,9 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import Category, Product, Cart, CartItem
-from .serializers import ProductSerializer
+from .serializers import *
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
+from rest_framework import generics
 
 
 class ProductPagination(PageNumberPagination):
@@ -28,3 +29,48 @@ class ProductDetailAPIView(APIView):
         
         serializer = ProductSerializer(product)
         return Response(serializer.data)
+    
+
+class ProductPriceAPIView(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductPriceSerializer
+
+
+class CartAPIView(generics.ListCreateAPIView):
+    queryset = CartItem.objects.all()
+    serializer_class = CartItemSerializer
+        
+
+class OrderAPIView(generics.CreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+
+class ProductByCategoryAPIView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+
+    def get_queryset(self):
+        category_id = self.kwargs['id']
+
+        
+        def get_child_category(category):
+
+            child_categories = [category]
+
+            for child in category.children.all():
+                child_categories.extend(get_child_category(child))
+
+            return child_categories
+        
+        try:
+            category = Category.objects.get(id=category_id)
+            categories = get_child_category(category=category)
+        except Category.DoesNotExist:
+            return Category.objects.none()
+        
+
+        products = Product.objects.filter(category__in=categories)
+
+        return products
+        
