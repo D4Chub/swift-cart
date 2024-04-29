@@ -7,6 +7,8 @@ from .serializers import *
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework import generics
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 
 class ProductPagination(PageNumberPagination):
@@ -74,3 +76,40 @@ class ProductByCategoryAPIView(generics.ListAPIView):
 
         return products
         
+
+class CartOrderAPIView(generics.ListAPIView):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return CartItem.objects.filter(cart__user=user)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        cart_items = CartItem.objects.filter(cart__user=user)
+
+        if not cart_items.exists():
+            return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Создание заказа
+        order = Order.objects.create(user=user)
+
+        # Добавление товаров из корзины в заказ и уменьшение количества товаров на складе
+        for cart_item in cart_items:
+            product = cart_item.product
+            if product.stock < cart_item.quantity:
+                return Response({"error": f"Not enough stock for {product.name}"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Создание пункта заказа
+            order_item = order.orderitem_set.create(product=product, quantity=cart_item.quantity)
+
+            # Уменьшение количества товаров на складе
+            product.stock -= cart_item.quantity
+            product.save()
+
+        # Очистка корзины пользователя
+        cart_items.delete()
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
