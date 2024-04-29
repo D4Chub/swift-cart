@@ -17,15 +17,18 @@ class ProductPriceSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
+    cart = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = CartItem
         fields = '__all__'
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    # product_price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Order
         fields = '__all__'
         read_only_fields = ['total_price',]
+
+
