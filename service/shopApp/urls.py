@@ -23,6 +23,11 @@ urlpatterns = [
     path('order/', OrderAPIView.as_view()),
 
     #TODO request for an order proucts from user cart
+    path('cart/order/', CartOrderAPIView.as_view()),
+
+    path('auth/', include('rest_framework.urls')),
+
+
 ]
 
     
