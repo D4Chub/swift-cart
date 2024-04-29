@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, Category, Product, Order
+from .models import *
 
 
 @admin.register(Product)
@@ -31,6 +31,4 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'product', 'amount', 'total_price']
     list_display_links = ['id', 'user', 'product']
     readonly_fields = ['total_price']
-
-
-
+ 
