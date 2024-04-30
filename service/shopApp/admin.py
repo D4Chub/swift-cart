@@ -4,7 +4,7 @@ from .models import *
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'category', 'regular_price', 'discount_price', 'stock']
+    list_display = ['id', 'name', 'category', 'regular_price', 'discount_price']
     list_display_links = ['id', 'name', 'category']
 
 
@@ -26,9 +26,4 @@ class CartItemAdmin(admin.ModelAdmin):
     list_display_links = ['id', 'cart', 'quantity', 'product']
 
 
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'product', 'amount', 'total_price']
-    list_display_links = ['id', 'user', 'product']
-    readonly_fields = ['total_price']
  
