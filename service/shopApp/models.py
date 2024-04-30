@@ -14,7 +14,7 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     regular_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    stock = models.PositiveIntegerField()
+    stock = models.PositiveIntegerField(default=1)
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     
@@ -24,7 +24,6 @@ class Product(models.Model):
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    products = models.ManyToManyField(Product, through='CartItem')
     
     def __str__(self):
         return f"Cart for {self.user.username}"
