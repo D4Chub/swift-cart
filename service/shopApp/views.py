@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .models import Category, Product, Cart, CartItem
+from .models import *
 from .serializers import *
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
@@ -70,24 +70,9 @@ class ProductByCategoryAPIView(generics.ListAPIView):
 class CartAPIView(generics.CreateAPIView):
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
+    
 
-    def create(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            cart, created = Cart.objects.get_or_create(user=request.user)
-            if created:
-                return Response({'message': 'Cart created successfully.'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'message': 'Cart already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'message': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
-        
 
-class CartItemAPIView(generics.CreateAPIView):
-    queryset = CartItem.objects.all()
-    serializer_class = CartItemSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        return CartItem.objects.filter(cart__user=user)
+
 

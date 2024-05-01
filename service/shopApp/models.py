@@ -23,16 +23,15 @@ class Product(models.Model):
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    
-    def __str__(self):
-        return f"Cart for {self.user.username}"
-
-
-class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    
+
     def __str__(self):
-        return f"{self.product.name} in {self.cart}"
+        return f'{self.product.name} -- in cart for {self.user.username} [{self.quantity}]'
+    
+
+
+
+
+        

@@ -11,7 +11,6 @@ urlpatterns = [
     path('products/stock/', ProductPriceAPIView.as_view({'get': 'list'})),
     
     path('add/cart/', CartAPIView.as_view(), name='add-cart'),
-    path('cart/item/', CartItemAPIView.as_view(), name='add-items-in-cart')
-    
+    path('cart/item/', CartAPIView.as_view(), name='add-items-in-cart'),
 
 ]
