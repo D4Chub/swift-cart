@@ -8,7 +8,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
 
 
 class ProductPagination(PageNumberPagination):
@@ -71,8 +72,32 @@ class CartAPIView(generics.CreateAPIView):
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
     
+    def perform_create(self, serializer):
+        product = serializer.validated_data['product']
+        quantity = serializer.validated_data['quantity']
+        total_price = product.discount_price * quantity
+        serializer.save(total_price=total_price, user=self.request.user) 
 
 
+class OrderAPIView(APIView):
+    serializer_class = OrderSerializer
 
+    def post(self, request, format=None):
+        # Получаем пользователя, для которого создается заказ
+        user = request.user
+        
+        # Получаем корзину пользователя
+        cart_items = Cart.objects.filter(user=user)
+        
+        # Вычисляем общую стоимость заказа на основе содержимого корзины
+        total_price = sum(cart_item.product.discount_price * cart_item.quantity for cart_item in cart_items)
+        
+        cart_owner = Cart.objects.filter(user=user)
 
-
+        # Создаем заказ
+        order = Order.objects.create(cart=cart_owner, total_price=total_price)
+        
+        # Очищаем корзину пользователя
+        cart_items.delete()
+        
+        return Response({'message': 'Order placed successfully'}, status=status.HTTP_201_CREATED)
