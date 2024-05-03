@@ -4,8 +4,9 @@ from .models import *
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['user', 'product', 'quantity']
+    list_display = ['user', 'product', 'quantity', 'total_price']
     list_display_links = ['user', 'product', 'quantity']
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -17,3 +18,10 @@ class ProductAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'parent']
     list_display_links = ['name', 'parent']
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['cart', 'total_price']
+    list_display_links = ['cart', 'total_price']
+
