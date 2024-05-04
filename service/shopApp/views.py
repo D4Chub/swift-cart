@@ -2,14 +2,14 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .models import Category, Product, Cart, CartItem
+from .models import *
 from .serializers import *
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
 
 class ProductPagination(PageNumberPagination):
     page_size = 10 
@@ -65,24 +65,44 @@ class ProductByCategoryAPIView(generics.ListAPIView):
         products = Product.objects.filter(category__in=categories)
 
         return products
-        
-
-
-class CartItemAPIView(generics.CreateAPIView):
-    serializer_class = CartItemSerializer
-    permission_classes = [IsAuthenticated, ]
-
-    def perform_create(self, serializer):
-        # Устанавливаем текущего пользователя в качестве владельца корзины
-        serializer.save(user=self.request.user)
-
+    
+class IsOwnUser(permissions.BasePermission):
+    """Пользователь может просматривать только свои объекты."""
+    
+    def has_object_permission(self, request, view, obj):
+        # Разрешено доступ только для владельца объекта
+        return obj.user == request.user
+    
 
 class CartAPIView(generics.CreateAPIView):
     serializer_class = CartSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, ]
+    permission_classes = [IsAuthenticated, IsOwnUser]
     
-    def create(self, request, *args, **kwargs):
-        cart_items = CartItem.objects.filter(cart__user=request.user)
-        for item in cart_items:
-            item.delete()
-        return Response({'message': 'Order placed successfully.'}, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        product = serializer.validated_data['product']
+        quantity = serializer.validated_data['quantity']
+        total_price = product.discount_price * quantity
+        serializer.save(total_price=total_price, user=self.request.user) 
+
+
+
+class OrderAPIView(APIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated, IsOwnUser]
+
+
+    def post(self, request, format=None):
+        user = request.user
+        user_cart: Cart = user.cart_set.filter(status=True).first()
+        total_price = user_cart.product.discount_price * user_cart.quantity
+        
+        order = Order.objects.create(cart=user_cart, total_price=total_price)
+        
+        user_cart.product.stock -= user_cart.quantity
+        user_cart.product.save()
+
+        user_cart.status = False
+        user_cart.save()
+        
+        return Response({'message': 'Order placed successfully'}, status=status.HTTP_201_CREATED)
+

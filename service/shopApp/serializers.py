@@ -27,21 +27,13 @@ class CartSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Cart
-        fields = '__all__'
-        
 
-class CartItemSerializer(serializers.ModelSerializer):
-    cart = CartSerializer()
+        fields = ['user', 'product', 'quantity']
+        read_only_fields = ['total_price']
 
+
+class OrderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CartItem
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Устанавливаем queryset для поля cart
-        self.fields['cart'].queryset = self.context['request'].user.cart_set.all()
-
-
-
-
+        model = Order
+        fields = ['cart']
+        read_only_fields = ['total_price']
