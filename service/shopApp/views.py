@@ -9,8 +9,7 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from django.db import transaction
-
+from rest_framework import permissions
 
 class ProductPagination(PageNumberPagination):
     page_size = 10 
@@ -67,10 +66,17 @@ class ProductByCategoryAPIView(generics.ListAPIView):
 
         return products
     
+class IsOwnUser(permissions.BasePermission):
+    """Пользователь может просматривать только свои объекты."""
+    
+    def has_object_permission(self, request, view, obj):
+        # Разрешено доступ только для владельца объекта
+        return obj.user == request.user
+    
 
 class CartAPIView(generics.CreateAPIView):
     serializer_class = CartSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnUser]
     
     def perform_create(self, serializer):
         product = serializer.validated_data['product']
@@ -79,25 +85,23 @@ class CartAPIView(generics.CreateAPIView):
         serializer.save(total_price=total_price, user=self.request.user) 
 
 
+
 class OrderAPIView(APIView):
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated, IsOwnUser]
+
 
     def post(self, request, format=None):
-        # Получаем пользователя, для которого создается заказ
         user = request.user
+        user_cart: Cart = user.cart_set.filter(status=True).first()
+        total_price = user_cart.product.discount_price * user_cart.quantity
         
-        # Получаем корзину пользователя
-        cart_items = Cart.objects.filter(user=user)
+        order = Order.objects.create(cart=user_cart, total_price=total_price)
         
-        # Вычисляем общую стоимость заказа на основе содержимого корзины
-        total_price = sum(cart_item.product.discount_price * cart_item.quantity for cart_item in cart_items)
-        
-        cart_owner = Cart.objects.filter(user=user)
+        user_cart.product.stock -= user_cart.quantity
+        user_cart.product.save()
 
-        # Создаем заказ
-        order = Order.objects.create(cart=cart_owner, total_price=total_price)
-        
-        # Очищаем корзину пользователя
-        cart_items.delete()
+        user_cart.status = False
+        user_cart.save()
         
         return Response({'message': 'Order placed successfully'}, status=status.HTTP_201_CREATED)
