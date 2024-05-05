@@ -104,5 +104,7 @@ class OrderAPIView(APIView):
         user_cart.status = False
         user_cart.save()
         
-        return Response({'message': 'Order placed successfully'}, status=status.HTTP_201_CREATED)
+        message = f"Order placed successfully. Product: {user_cart.product} || Total price: {total_price}"
+
+        return Response({'message': message}, status=status.HTTP_201_CREATED)
 
