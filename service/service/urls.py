@@ -1,7 +1,5 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.schemas import get_schema_view
-from django.views.generic import TemplateView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
