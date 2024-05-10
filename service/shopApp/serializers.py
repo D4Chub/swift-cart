@@ -1,5 +1,5 @@
-from  rest_framework import serializers
-from .models import *
+from rest_framework import serializers
+from shopApp.models import *
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -27,6 +27,7 @@ class CartSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Cart
+
         fields = ['user', 'product', 'quantity']
         read_only_fields = ['total_price']
 

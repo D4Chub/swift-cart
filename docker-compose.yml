@@ -3,11 +3,13 @@ services:
   django:
     build: .
     container_name: django
-    command: python service/manage.py runserver 0.0.0.0:8000
+    command: [gunicorn, --bind, 0.0.0.0:8000, shopApp.wsgi]
     ports:
       - 8000:8000
     depends_on:
       - db
+    volumes:
+      - .:/app
 
   db:
     image: postgres:15
@@ -16,3 +18,4 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     container_name: pgdb
+    
