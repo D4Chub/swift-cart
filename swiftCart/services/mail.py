@@ -2,26 +2,38 @@ import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os 
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_mail(receiver_email, product_name, total_price, quantity, name):
+def send_mail(
+    receiver_email: str,
+    product_name: str,
+    total_price: float,
+    quantity: int,
+    name: str
+        ) -> None:
+
+    """Отправляет сообщение на почту с помощью протокола SMTP"""
     port = 465  # For SSL
     smtp_server = "smtp.gmail.com"
     sender_email = os.getenv('MAIL')
     password = os.getenv('MAIL_PASSWORD')
 
+    if sender_email is None or password is None:
+        print("Ошибка: переменные среды для электронной почты не настроены")
+        return
+
     # Читаем содержимое HTML-файла
-    with open("templates/mail.html", "r") as file:
+    with open("templates/mail.html", "r", encoding='utf-8') as file:
         html_content = file.read()
 
     # Подставляем данные из запроса в HTML-шаблон
-    html_content = html_content.replace("[[product_name]]", product_name)
-    html_content = html_content.replace("[[quantity]]", str(quantity))
-    html_content = html_content.replace("[[total_price]]", str(total_price))
-    html_content = html_content.replace("[[name]]", name)
+    html_content: str = html_content.replace("[[product_name]]", product_name)
+    html_content: str = html_content.replace("[[quantity]]", str(quantity))
+    html_content: str = html_content.replace("[[total_price]]", str(total_price))
+    html_content: str = html_content.replace("[[name]]", name)
 
     # Создаем MIMEMultipart сообщение
     message = MIMEMultipart("alternative")
@@ -30,7 +42,7 @@ def send_mail(receiver_email, product_name, total_price, quantity, name):
     message["To"] = receiver_email
 
     # Создаем MIMEText объект с содержимым HTML файла
-    part1 = MIMEText(html_content, "html")
+    part1: MIMEText = MIMEText(html_content, "html")
 
     # Добавляем часть в сообщение
     message.attach(part1)

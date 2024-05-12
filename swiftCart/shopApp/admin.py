@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import *
+from shopApp.models import *
 from django.contrib.auth.admin import UserAdmin
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from shopApp.forms import CustomUserCreationForm, CustomUserChangeForm
 
 
 class CustomUserAdmin(UserAdmin):
@@ -17,7 +17,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 class CartAdmin(admin.ModelAdmin):
     list_display = ['user', 'product', 'quantity', 'total_price']
     list_display_links = ['user', 'product', 'quantity']
-
+    
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
