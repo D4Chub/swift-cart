@@ -26,7 +26,7 @@ class ProductPagination(PageNumberPagination):
 
 
 class ProductAPIView(viewsets.ModelViewSet):
-    """GET: Отображает все товары"""
+    """GET: Отображение всех товаров"""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = ProductPagination
@@ -34,7 +34,7 @@ class ProductAPIView(viewsets.ModelViewSet):
 
 
 class ProductDetailAPIView(APIView):
-    """GET: Отображает конкретный товар по его ID"""
+    """GET: Отображение конкретного товара по его ID"""
 
     permission_classes = [IsAuthenticated]
     
@@ -49,7 +49,7 @@ class ProductDetailAPIView(APIView):
     
 
 class ProductPriceAPIView(viewsets.ModelViewSet):
-    """GET: Отображает количество товаров на складе и цены со скидкой и без"""
+    """GET: Отображение количества товаров на складе и цены со скидкой и без"""
 
     queryset = Product.objects.all()
     serializer_class = ProductPriceSerializer
@@ -57,7 +57,7 @@ class ProductPriceAPIView(viewsets.ModelViewSet):
 
 
 class ProductByCategoryAPIView(generics.ListAPIView):
-    """GET: Отображает категории и подкатегории по их id"""
+    """GET: Отображение товаров по id их категории и подкатегории"""
     
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
@@ -76,7 +76,7 @@ class IsOwnUser(permissions.BasePermission):
     
 
 class CartAPIView(generics.CreateAPIView):
-    """POST: Добавляет товар в корзину"""
+    """POST: Добавление товара в корзину"""
 
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated, IsOwnUser]
@@ -87,7 +87,7 @@ class CartAPIView(generics.CreateAPIView):
         
 
 class OrderAPIView(APIView):
-    """POST: Оформляет заказ и отправяет чек на почту"""
+    """POST: Оформление заказа и отправка чека на почту"""
 
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsOwnUser]
